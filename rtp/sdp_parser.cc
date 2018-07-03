@@ -112,8 +112,14 @@ using namespace boost;
 
 	int SDP_parser::SDP_GetContentLength()
 	{
-               return 0;
-	}
+               std::string input = "Content-Length: 569";
+               std::string token = RTSP_SDP_CONTENT_LENGTH;
+
+               std::string result = get_right_of_delim(input, token);
+               std::cout << result << std::endl;
+               content_len = (char *)result.c_str();
+               return atoi(content_len);
+        }
 
 	char* SDP_parser::SDP_GetContentBaseUrl()
 	{
@@ -165,4 +171,6 @@ int main(int argc, 	char* argv[])
                 char *server = sdp->SDP_GetStreamingServer();
                 char *cache  = sdp->SDP_GetCacheControl();
                 char *expire = sdp->SDP_GetExpires();
+                int cnt_len = sdp->SDP_GetContentLength();
+                std::cout << cnt_len << std::endl;
 }
