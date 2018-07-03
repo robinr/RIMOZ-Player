@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="RTSP" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/RTSP" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/RTSP" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-std=c++11" />
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+			<Add option="-lpthread" />
+			<Add option="-lboost_system" />
+			<Add option="-lboost_filesystem" />
+			<Add option="-lboost_thread" />
+			<Add directory="../../../../../../usr/local/include" />
+		</Compiler>
+		<Linker>
+			<Add library="../../../../../../usr/local/lib/libboost_atomic.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_atomic.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_chrono.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_chrono.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_container.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_container.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_context.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_context.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_coroutine.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_coroutine.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_date_time.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_date_time.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_exception.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_filesystem.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_filesystem.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_graph.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_graph.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_locale.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_locale.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_log.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_log.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_log_setup.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_log_setup.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_math_c99.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_math_c99.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_math_c99f.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_math_c99f.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_math_c99l.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_math_c99l.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_math_tr1.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_math_tr1.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_math_tr1f.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_math_tr1f.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_math_tr1l.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_math_tr1l.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_prg_exec_monitor.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_prg_exec_monitor.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_program_options.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_program_options.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_random.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_random.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_regex.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_regex.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_serialization.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_serialization.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_signals.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_signals.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_system.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_system.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_test_exec_monitor.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_thread.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_thread.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_timer.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_timer.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_unit_test_framework.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_unit_test_framework.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_wave.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_wave.so" />
+			<Add library="../../../../../../usr/local/lib/libboost_wserialization.a" />
+			<Add library="../../../../../../usr/local/lib/libboost_wserialization.so" />
+			<Add directory="../../../../../../usr/local/include" />
+		</Linker>
+		<Unit filename="../rtp/http_header.hpp" />
+		<Unit filename="../rtp/rtp_header.cc" />
+		<Unit filename="../rtp/rtp_header.h" />
+		<Unit filename="../rtp/rtp_nal.cc" />
+		<Unit filename="../rtp/rtp_nal.h" />
+		<Unit filename="../rtp/rtp_stats.cc" />
+		<Unit filename="../rtp/rtp_stats.h" />
+		<Unit filename="../rtp/rtp_stream.cc" />
+		<Unit filename="../rtp/rtp_stream.h" />
+		<Unit filename="../rtp/rtsp_client.cc" />
+		<Unit filename="../rtp/rtsp_receiver.cc" />
+		<Unit filename="../rtp/rtsp_receiver.h" />
+		<Unit filename="../rtp/sdp_parser.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
