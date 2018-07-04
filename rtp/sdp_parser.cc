@@ -123,28 +123,101 @@ using namespace boost;
 
 	char* SDP_parser::SDP_GetContentBaseUrl()
 	{
-			return NULL;
+			   std::string input = "Content-Base: rtsp://192.168.1.6:1935/vod/one.mp4/";
+			   std::string token = RTSP_SDP_CONTENT_BASE;
+			   
+			   std::string result = get_right_of_delim(input, token);
+			   std::cout << result << std::endl;
+			   content_base_url = (char *)result.c_str();
+			   return content_base_url;
 	}
 
 	char* SDP_parser::SDP_GetTimeStamp()
 	{
-			return NULL;
+			  std::string input = "Date: Mon, 2 Jul 2018 12:47:07 IST";
+			  std::string token = RTSP_SDP_DATE;
+			  
+			  std::string result = get_right_of_delim(input, token);
+			  std::cout << result << std::endl;
+			  time = (char *)result.c_str();
+			  return time;
 	}
 
 	char* SDP_parser::SDP_GetContentType()
 	{
-			return NULL;
+		      std::string input = "Content-Type: application/sdp";
+			  std::string token = RTSP_SDP_CONTENT_TYPE;
+			  
+			  std::string result = get_right_of_delim(input, token);
+			  std::cout << result << std::endl;
+			  content_type = (char *)result.c_str();
+			  return content_type;
 	}
 
 	char* SDP_parser::SDP_GetSessionId()
 	{
-			return NULL;
+			std::string input = "Session: 1177817050;timeout=60";
+			std::string token = RTSP_SDP_SESSION;
+			  
+			std::string intrim = get_right_of_delim(input, token);
+			std::string result =  intrim.substr(0,intrim.find(";",0));
+			std::cout << result << std::endl;
+			content_session = (char *)result.c_str();
+			return content_session;
 	}
 
 	int SDP_parser::SDP_GetTimeout()
 	{
-			return 0;
+		    std::string input = "Session: 1177817050;timeout=60";
+			std::string token = RTSP_SDP_SESSION;
+			std::string token_time = RTSP_SDP_ATTRIBUTE_TIMEOUT;
+			  
+			std::string intrim = get_right_of_delim(input, token);
+			std::string result = get_right_of_delim(intrim,token_time);
+            std::cout << result << std::endl;
+			timeout = (char *)result.c_str(); 
+			return atoi(timeout);
 	}
+	
+	int SDP_parser::SDP_GetVersion()
+    {
+		return 0;
+	}          
+	
+	Owner* SDP_parser::SDP_GetOwnerInfo()
+	{
+			return NULL;
+	}
+	
+	char  *SDP_parser::SDP_GetSessionName()
+	{
+		return NULL;
+	}
+	Connect *SDP_parser::SDP_GetConnectionInfo()   
+	{
+		return NULL;
+	}
+		
+	Time *SDP_parser::SDP_GetTimeParameter()    
+	{
+		return NULL;
+	}
+		
+	PT 	*SDP_parser::SDP_GetSDPAttributes()  
+	{
+		return NULL;
+	}
+	
+	AudioAttribute  *SDP_parser::SDP_GetAudioAttributes()  
+    {
+		return NULL;
+	}
+	
+	VideoAttribute  *SDP_parser::SDP_GetVideoAttributes()
+	{
+		return NULL;
+	}
+	
 }
 
 int main(int argc, 	char* argv[])
@@ -168,9 +241,16 @@ int main(int argc, 	char* argv[])
 		bool one = sdp->IsRTSPOne();
 		std::cout << one << std::endl;
 		std::cout << sdp->SDP_GetCSeq() << std::endl;
-                char *server = sdp->SDP_GetStreamingServer();
-                char *cache  = sdp->SDP_GetCacheControl();
-                char *expire = sdp->SDP_GetExpires();
-                int cnt_len = sdp->SDP_GetContentLength();
-                std::cout << cnt_len << std::endl;
+		
+		char *server = sdp->SDP_GetStreamingServer();
+		char *cache  = sdp->SDP_GetCacheControl();
+		char *expire = sdp->SDP_GetExpires();
+		int cnt_len = sdp->SDP_GetContentLength();
+		std::cout << cnt_len << std::endl;
+		char *base_url = sdp->SDP_GetContentBaseUrl();
+		char *tm = sdp->SDP_GetTimeStamp();
+		char *cnt_type = sdp->SDP_GetContentType();
+		char *id = sdp->SDP_GetSessionId();
+		int  tmout = sdp->SDP_GetTimeout();
+		std::cout << tmout << std::endl;
 }
