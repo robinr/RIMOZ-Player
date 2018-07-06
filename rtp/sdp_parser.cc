@@ -3,6 +3,10 @@
 #include <fstream>
 #include <string>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/regex.hpp>
+#include <boost/foreach.hpp>
 #include <vector>
 #include <stdio.h>
 
@@ -13,6 +17,7 @@ namespace Rtsp
 {
 using namespace std;
 using namespace boost;
+
 	SDP_parser::SDP_parser() {
 			protocol_version = NULL;
 			cseq_num = NULL;
@@ -181,35 +186,195 @@ using namespace boost;
 	
 	int SDP_parser::SDP_GetVersion()
     {
+			std::string input = "v=0";
+			char *version = (char *)input.c_str();
+			
+			if ((version[0] == 'v') && (version[1] == '='))
+			{
+				char *number = (version + 2);
+				return atoi(number);
+			}
 		return 0;
 	}          
 	
 	Owner* SDP_parser::SDP_GetOwnerInfo()
 	{
-			return NULL;
+			std::string input = "o=- 1177817050 1177817050 IN IP4 127.0.0.1";
+			char *own = (char *)input.c_str();
+			
+			owner = (Owner *)malloc(sizeof(Owner));
+			
+			if ((own[0] == 'o') && (own[1] == '='))
+			{
+				typedef std::vector<std::string> Tokens;
+				Tokens tokens;
+				boost::split(tokens, input, boost::is_any_of(" "));
+				
+				int size = tokens.size();
+				int count = 0;
+				BOOST_FOREACH( const std::string& i, tokens) {
+					switch(count){
+						case 0:
+						{
+								std::cout << "Owner " << own[2] << std::endl;
+								char *value = (char *)i.c_str();
+								owner->username = (value + 2);
+								break;
+						}
+						case 1:
+						{
+						        char *sessionID = (char *)i.c_str();
+								int ID = atoi(sessionID);
+								std::cout << "Owner SessionID " << i << std::endl;
+								owner->sessionID = ID;
+								break;
+						}
+						case 2:
+						{
+								char *sessionVer = (char *)i.c_str();
+								int Ver = atoi(sessionVer);
+								std::cout << "Owner Version " << i << std::endl;
+								owner->session_version = Ver;
+								break;
+						}
+						case 3:
+						{
+								owner->networktype = (char *)i.c_str();
+								std::cout << "Owner Network Type " << i << std::endl;
+								break;
+						}
+						case 4:
+						{
+								owner->address_type = (char *)i.c_str();
+								std::cout << "Owner Address Type " << i << std::endl;
+								break;
+						}
+						case 5:
+						{
+								owner->address = (char *)i.c_str();
+								std::cout << "Owner IP Address " << i << std::endl;
+								break;
+						}
+						default:
+								break;
+					}
+					count++;
+				}
+			}
+			return owner;
 	}
 	
 	char  *SDP_parser::SDP_GetSessionName()
 	{
-		return NULL;
+		std::string input ="s=one.mp4";
+		char *s = (char *)input.c_str();
+		if((s[0] == 's') && (s[1] == '='))
+		{
+			session_name = (s + 2);
+			std::string sess(session_name);
+			std::cout << "Session is " << sess << std::endl;
+		}
+		return session_name;
 	}
 	Connect *SDP_parser::SDP_GetConnectionInfo()   
 	{
-		return NULL;
+		std::string input = "c=IN IP4 0.0.0.0";
+		char *conn = (char *)input.c_str();
+		if((conn[0] == 'c') && (conn[1] == '='))
+		{
+			connect = (Connect *)malloc(sizeof(Connect));
+			typedef std::vector<std::string> Tokens;
+			Tokens tokens;
+			boost::split(tokens, input, boost::is_any_of(" "));
+				
+			int size = tokens.size();
+			int count = 0;
+			BOOST_FOREACH( const std::string& i, tokens) {
+				switch(count) {
+					case 0:
+					{
+							char *network = (char *)i.c_str();
+							connect->networktype = (network + 2);
+							std::string val(connect->networktype);
+							std::cout << "Network Type :" << val << std::endl;
+							break;
+					}
+					case 1:
+					{
+							std::cout << "Address Type " << i << std::endl;
+							connect->address_type = (char *)i.c_str();
+							break;
+					}
+					case 2:
+					{
+							std::cout << "Address " << i << std::endl;
+						    connect->address = (char *)i.c_str();
+							break;
+					}
+					default:
+							break;
+				}
+				count++;
+			}
+		}
+		return connect;
 	}
 		
 	Time *SDP_parser::SDP_GetTimeParameter()    
 	{
-		return NULL;
+		std::string input = "t=0 0";
+		char *timeparam = (char *) input.c_str();
+		if((timeparam[0] == 't') && (timeparam[1] = '='))
+		{
+			ttime = (Time *)malloc(sizeof(Time));
+			typedef std::vector<std::string> Tokens;
+			Tokens tokens;
+			boost::split(tokens, input, boost::is_any_of(" "));
+				
+			int size = tokens.size();
+			int count = 0;
+			BOOST_FOREACH( const std::string& i, tokens) {
+				switch(count) {
+					case 0:
+					{
+							char* stm = (char *)i.c_str();
+							ttime->start_time = (stm + 2);
+							std::string start_tm(ttime->start_time);
+							std::cout << start_tm << std::endl;
+							break;
+					}
+					case 1:
+					{
+							char* sto = (char *)i.c_str();
+							ttime->stop_time = (sto + 2);
+							std::string stop_tm(ttime->stop_time);
+							std::cout << stop_tm << std::endl;
+							break;
+					}
+					default:
+						    break;
+				}
+				count++;
+			}
+		}
+		return ttime;
 	}
 		
 	PT 	*SDP_parser::SDP_GetSDPAttributes()  
 	{
+                vector<std::string> res;
+		std::string input = "a=sdplang:en\r\na=range:npt=0- 150.883\r\na=control:*";
+                split_regex(res, input, boost::regex("(\r\n)+"));
+                for (auto& tok : res) 
+                {
+                    std::cout << "Token: " << tok << std::endl;
+                }
+		
 		return NULL;
 	}
 	
 	AudioAttribute  *SDP_parser::SDP_GetAudioAttributes()  
-    {
+        {
 		return NULL;
 	}
 	
@@ -225,6 +390,10 @@ int main(int argc, 	char* argv[])
 		std::string file,line;
 		std::ifstream infile("one.sdp");
 		Rtsp::SDP_parser *sdp;
+		Rtsp::Owner *owns;
+		Rtsp::Connect *cons;
+		Rtsp::Time *tms;
+		Rtsp::PT *pt;
 		char *data = NULL;
 		int len = 0;
 		while( getline(infile,line))
@@ -253,4 +422,11 @@ int main(int argc, 	char* argv[])
 		char *id = sdp->SDP_GetSessionId();
 		int  tmout = sdp->SDP_GetTimeout();
 		std::cout << tmout << std::endl;
+		int ver = sdp->SDP_GetVersion();
+		std::cout << "version of v=" << ver << std::endl;
+		owns = sdp->SDP_GetOwnerInfo();
+		char *sess = sdp->SDP_GetSessionName();
+		cons = sdp->SDP_GetConnectionInfo();
+		tms  = sdp->SDP_GetTimeParameter();
+		pt = sdp->SDP_GetSDPAttributes();
 }

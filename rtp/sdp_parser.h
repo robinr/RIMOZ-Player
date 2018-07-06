@@ -130,8 +130,11 @@ class SDP_parser {
 		// Application SDP holder
 	public:
 		int   version;
-        
+        Owner *owner;
         char *session_name;
+		Connect *connect;
+		Time    *ttime;
+		PT      *ppt;
 
 	public:
 		SDP_parser();
