@@ -362,19 +362,204 @@ using namespace boost;
 		
 	PT 	*SDP_parser::SDP_GetSDPAttributes()  
 	{
-                vector<std::string> res;
+		vector<std::string> res;
+		int count = 0;
 		std::string input = "a=sdplang:en\r\na=range:npt=0- 150.883\r\na=control:*";
-                split_regex(res, input, boost::regex("(\r\n)+"));
-                for (auto& tok : res) 
-                {
-                    std::cout << "Token: " << tok << std::endl;
-                }
+		split_regex(res, input, boost::regex("(\r\n)+"));
+		ppt = (PT *)malloc(sizeof(PT));
+		for (auto& tok : res) 
+		{
+			switch(count){
+				case 0 :
+				{
+					
+					std::string token = RTSP_SDP_ATTRIBUTE_LANG;
+					std::string result = get_right_of_delim(tok,token);
+					char *value = (char *) result.c_str();
+					ppt->pt = new ptree();
+					ppt->pt->put("sdplang",value);
+					std::cout << "sdplang  " << result << std::endl;
+					break;
+				}
+				case 1:
+				{
+					std::string token = RTSP_SDP_ATTRIBUTE_RANGE_NTP;
+					std::string result = get_right_of_delim(tok,token);
+					char *value = (char *) result.c_str();
+					ppt->pt->put("range",value);
+					std::cout << "range  " << result<< std::endl;
+					break;
+				}
+				case 2:
+				{
+					std::string token = RTSP_SDP_ATTRIBUTE_CONTROL;
+					std::string result = get_right_of_delim(tok,token);
+					char *value = (char *)result.c_str();
+					ppt->pt->put("control",value);
+					std::cout << "control " << result << std::endl;
+					break;
+				}
+				default:
+					break;
+			}
+			count++;
+			//std::cout << "Token: " << tok << std::endl;
+		}
 		
-		return NULL;
+		return ppt;
 	}
 	
 	AudioAttribute  *SDP_parser::SDP_GetAudioAttributes()  
-        {
+	{
+		vector<std::string> res;
+		int count = 0;
+		std::string input = "m=audio 0 RTP/AVP 96\r\na=rtpmap:96 mpeg4-generic/44100/2\r\na=fmtp:96 profile-level-id=1;mode=AAC-hbr;sizelength=13;indexlength=3;indexdeltalength=3;config=1210\r\na=control:trackID=1\r\n";
+		split_regex(res, input, boost::regex("(\r\n)+"));
+        aat = (AudioAttribute *)malloc(sizeof(AudioAttribute));
+		for (auto& tok : res) 
+		{
+			switch(count){
+				case 0:
+				{
+					  std::string token = RTSP_SDP_ATTRIBUTE_MEDIAID;
+					  std::string result = get_right_of_delim(tok,token);
+				      aat->audio_RTPAVP = (char *)result.c_str();
+					  std::cout << "RTPAVP" << result << std::endl;
+					  break;
+				}
+				case 1:
+				{
+				      std::string split_me(tok);
+					  typedef std::vector<std::string> SubTokens;
+					  SubTokens subst;
+					  int subcount = 0;
+					  boost::split(subst, split_me,boost::is_any_of(" "));
+					  BOOST_FOREACH( const std::string& i, subst) {
+						  if(subcount == 0)
+						  {
+							  std::string indelim = RTSP_SDP_ATTRIBUTE_RTPMAP;
+							  std::string resultrtp = get_right_of_delim(i ,indelim);
+							  char *rtpmap = (char *)resultrtp.c_str();
+							  aat->rtpmap = atoi(rtpmap);
+							  std::cout << "inner value of rtpmap " << aat->rtpmap << std::endl;
+						  }
+						  if(subcount == 1)
+						  {
+							  aat->codec_rate = (char *)i.c_str();
+						  }
+						  subcount++;
+						  std::cout << i << std::endl;
+					  }
+					  break;
+				}				
+				case 2:
+				{
+					  std::string split_me(tok);
+					  typedef std::vector<std::string> SubTokens;
+					  SubTokens subst;
+					  int subcount = 0;
+					  boost::split(subst, split_me,boost::is_any_of(" "));
+					  BOOST_FOREACH( const std::string& i, subst) {
+						  if(subcount == 0)
+						  {
+							  std::string indelim = RTSP_SDP_ATTRIBUTE_FMTP;
+							  std::string resultfmtp = get_right_of_delim(i ,indelim);
+							  char *fmtpmap = (char *)resultfmtp.c_str();
+							  aat->fmtp = atoi(fmtpmap);
+							  std::cout << "inner value of fmtp " << aat->fmtp << std::endl;
+						  }
+						  if(subcount == 1)
+						  {
+							  std::string split_inme(i);
+					          typedef std::vector<std::string> SubInnerTokens;
+							  SubInnerTokens subinst;
+					          int subincount = 0;
+					          boost::split(subinst, split_inme,boost::is_any_of(";"));
+							  
+								BOOST_FOREACH( const std::string& j, subinst) {
+									switch(subincount){
+										case 0:
+										{
+											std::string in_delim = RTSP_SDP_ATTRIBUTE_PROFILE;
+											std::string profile = get_right_of_delim(j,in_delim);
+											char *prof = (char *)profile.c_str();
+											aat->profile_level_id = atoi(prof);
+											std::cout << "profile id : " << aat->profile_level_id << std::endl;
+											break;
+										}
+										case 1:
+										{
+											std::string in_delim = RTSP_SDP_ATTRIBUTE_MODE;
+											std::string mode = get_right_of_delim(j,in_delim);
+											char *md = (char *)mode.c_str();
+											aat->mode = md;
+											std::cout << "mode : " << mode << std::endl;
+											break;
+										}
+										case 2:
+										{
+											std::string in_delim =  RTSP_SDP_ATTRIBUTE_SIZELENGTH;
+											std::string sizelength = get_right_of_delim(j,in_delim);
+											char *szlen = (char *)sizelength.c_str();
+											aat->sizelength = atoi(szlen);
+											std::cout << "size length : " << aat->sizelength << std::endl;
+											break;
+										}
+										case 3:
+										{
+											std::string in_delim = RTSP_SDP_ATTRIBUTE_INDEXLENGTH;
+											std::string idxlength = get_right_of_delim(j, in_delim);
+										    char *idlen = (char *)idxlength.c_str();
+											aat->indexlength = atoi(idlen);
+											std::cout << "index length :" << aat->indexlength << std::endl;
+											break;
+										}
+										case 4:
+										{
+											std::string in_delim = RTSP_SDP_ATTRIBUTE_INDEXDELTALENGTH;
+											std::string idxdeltalen = get_right_of_delim(j, in_delim);
+											char* iddellen = (char *)idxdeltalen.c_str();
+											aat->indexdeltalength = atoi(iddellen);
+											std::cout << "index delta length :" << aat->indexdeltalength << std::endl;
+											break;
+										}
+										case 5:
+										{
+											std::string in_delim = RTSP_SDP_ATTRIBUTE_CONFIG;
+											std::string cfg = get_right_of_delim(j, in_delim);
+											char *cfgid = (char *)cfg.c_str();
+											aat->config = atoi(cfgid);
+											std::cout << "config : " << aat->config << std::endl;
+											break;
+										}
+										default:
+											break;
+									}
+									subincount++;	
+									//std::cout << "tokens" << j << std::endl;
+								}
+								
+							}
+							  //std::cout << "part 2" << i << std::endl;
+						subcount++;
+						}
+					//std::cout << tok << std::endl;
+					break;
+				}
+				case 3:
+				{
+					  std::string deli = RTSP_SDP_ATTRIBUTE_CONTROL;
+					  std::string result = get_right_of_delim(tok,deli);
+					  char *track = (char *)result.c_str();
+					  aat->control = track;
+				      std::cout << result << std::endl;
+					  break;
+				}
+				default:
+					break;
+			}
+			count++;
+		}
 		return NULL;
 	}
 	
@@ -394,6 +579,7 @@ int main(int argc, 	char* argv[])
 		Rtsp::Connect *cons;
 		Rtsp::Time *tms;
 		Rtsp::PT *pt;
+		Rtsp::AudioAttribute *at;
 		char *data = NULL;
 		int len = 0;
 		while( getline(infile,line))
@@ -429,4 +615,5 @@ int main(int argc, 	char* argv[])
 		cons = sdp->SDP_GetConnectionInfo();
 		tms  = sdp->SDP_GetTimeParameter();
 		pt = sdp->SDP_GetSDPAttributes();
+		at = sdp->SDP_GetAudioAttributes();
 }

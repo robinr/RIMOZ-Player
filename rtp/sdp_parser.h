@@ -28,22 +28,24 @@
 #define RTSP_VERSION_ONE         		        "RTSP/1.0"
 #define RTSP_VERSION_TWO         			    "RTSP/2.0"  
 
-#define RTSP_SDP_ATTRIBUTE_LANG                 "sdplang:"
-#define RTSP_SDP_ATTRIBUTE_RANGE_NTP            "range:"
-#define RTSP_SDP_ATTRIBUTE_CONTROL              "control:"
-#define RTSP_SDP_ATTRIBUTE_RTPMAP               "rtpmap:"
-#define RTSP_SDP_ATTRIBUTE_FMTP                 "fmtp:"
-#define RTSP_SDP_ATTRIBUTE_PROFILE              "profile-level-id="
-#define RTSP_SDP_ATTRIBUTE_MODE                 "mode="
-#define RTSP_SDP_ATTRIBUTE_SIZELENGTH           "sizelength="
-#define RTSP_SDP_ATTRIBUTE_INDEXLENGTH          "indexlength="
-#define RTSP_SDP_ATTRIBUTE_INDEXDELTALENGTH     "indexdeltalength="
-#define RTSP_SDP_ATTRIBUTE_CONFIG               "config="
-#define RTSP_SDP_ATTRIBUTE_SPROP_PARAMETER_SETS "sprop-parameter-sets="
-#define RTSP_SDP_ATTRIBUTE_CLIPRECT             "cliprect:"
-#define RTSP_SDP_ATTRIBUTE_FRAMESIZE            "framesize:"
-#define RTSP_SDP_ATTRIBUTE_FRAMERATE            "framerate:"
-#define RTSP_SDP_ATTRIBUTE_TRACKID              "trackID="
+#define RTSP_SDP_ATTRIBUTE_LANG                    "sdplang:"
+#define RTSP_SDP_ATTRIBUTE_RANGE_NTP               "range:"
+#define RTSP_SDP_ATTRIBUTE_CONTROL                 "control:"
+#define RTSP_SDP_ATTRIBUTE_RTPMAP                  "rtpmap:"
+#define RTSP_SDP_ATTRIBUTE_FMTP                    "fmtp:"
+#define RTSP_SDP_ATTRIBUTE_PROFILE                 "profile-level-id="
+#define RTSP_SDP_ATTRIBUTE_MODE                    "mode="
+#define RTSP_SDP_ATTRIBUTE_SIZELENGTH              "sizelength="
+#define RTSP_SDP_ATTRIBUTE_INDEXLENGTH             "indexlength="
+#define RTSP_SDP_ATTRIBUTE_INDEXDELTALENGTH        "indexdeltalength="
+#define RTSP_SDP_ATTRIBUTE_CONFIG                  "config="
+#define RTSP_SDP_ATTRIBUTE_SPROP_PARAMETER_SETS    "sprop-parameter-sets="
+#define RTSP_SDP_ATTRIBUTE_CLIPRECT                "cliprect:"
+#define RTSP_SDP_ATTRIBUTE_FRAMESIZE               "framesize:"
+#define RTSP_SDP_ATTRIBUTE_FRAMERATE               "framerate:"
+#define RTSP_SDP_ATTRIBUTE_TRACKID                 "trackID="
+#define RTSP_SDP_ATTRIBUTE_MEDIAID                 "m="
+#define RTSP_SDP_ATTRIBUTE_MEDIA_SUB_ATTRIBUTE_ID  "a="
 
 
 namespace Rtsp{
@@ -69,13 +71,14 @@ typedef struct {
 		}Time;
 		
 		typedef struct {
-			ptree **pt;
+			ptree *pt;
 		}PT;
 	
 	    typedef struct {
+			char  *audio_RTPAVP;
 			int   rtpmap;
 			char *codec_rate;
-			int   ftmp;
+			int   fmtp;
 			int   profile_level_id;
 			char *mode;
 			int   sizelength;
@@ -135,7 +138,7 @@ class SDP_parser {
 		Connect *connect;
 		Time    *ttime;
 		PT      *ppt;
-
+        AudioAttribute  *aat;
 	public:
 		SDP_parser();
 		SDP_parser(char* data, int len);
