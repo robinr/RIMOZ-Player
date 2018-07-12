@@ -565,9 +565,127 @@ using namespace boost;
 	
 	VideoAttribute  *SDP_parser::SDP_GetVideoAttributes()
 	{
-		return NULL;
+		vector<std::string> res;
+		std::string input ="m=video 0 RTP/AVP 97\r\na=rtpmap:97 H264/90000\r\na=fmtp:97 packetization-mode=1;profile-level-id=4D401E;sprop-parameter-sets=Z01AHuiAUBf8uAiAAAH0gABdwAeLFok=,aOvvIA==\r\na=cliprect:0,0,360,640\r\na=framesize:97 640-360\r\na=framerate:23.98\r\na=control:trackID=2";
+		int count = 0;
+		split_regex(res, input, boost::regex("(\r\n)+"));
+		vat = (VideoAttribute *)malloc(sizeof(VideoAttribute));
+		for (auto& tok : res) 
+		{
+			switch(count){
+				case 0:
+				{
+					std::string token = RTSP_SDP_ATTRIBUTE_MEDIAID;
+					std::string result = get_right_of_delim(tok,token);
+					vat->video_RTPAVP = (char *)result.c_str();
+					std::cout << "RTPAVP" << result << std::endl;
+					break;
+				}
+				case 1:
+				{
+					std::string split_me(tok);
+					typedef std::vector<std::string> SubTokens;
+					SubTokens subst;
+					int subcount = 0;
+					boost::split(subst, split_me,boost::is_any_of(" "));
+					BOOST_FOREACH( const std::string& i, subst) {
+						  if(subcount == 0)
+						  {
+							  std::string indelim = RTSP_SDP_ATTRIBUTE_RTPMAP;
+							  std::string resultrtp = get_right_of_delim(i ,indelim);
+							  char *rtpmap = (char *)resultrtp.c_str();
+							  vat->rtpmap = atoi(rtpmap);
+							  std::cout << "inner value of rtpmap " << aat->rtpmap << std::endl;
+						  }
+						  if(subcount == 1)
+						  {
+							  vat->codec_rate = (char *)i.c_str();							  
+						  }
+						subcount++;
+					}
+					//std::cout << "lines " << tok << std::endl;
+					break;
+				}
+				case 2:
+				{
+					std::string split_me(tok);
+					  typedef std::vector<std::string> SubTokens;
+					  SubTokens subst;
+					  int subcount = 0;
+					  boost::split(subst, split_me,boost::is_any_of(" "));
+					  BOOST_FOREACH( const std::string& i, subst) {
+						  if(subcount == 0)
+						  {
+							  std::string indelim = RTSP_SDP_ATTRIBUTE_FMTP;
+							  std::string resultfmtp = get_right_of_delim(i ,indelim);
+							  char *fmtpmap = (char *)resultfmtp.c_str();
+							  vat->fmtp = atoi(fmtpmap);
+							  std::cout << "inner value of fmtp " << vat->fmtp << std::endl;
+						  }
+						  if(subcount == 1)
+						  {
+							  //std::cout << "residue" << i << std::endl;
+						  std::string split_inme(i);
+					          typedef std::vector<std::string> SubInnerTokens;
+							  SubInnerTokens subinst;
+					          int subincount = 0;
+					          boost::split(subinst, split_inme,boost::is_any_of(";"));
+							  
+								BOOST_FOREACH( const std::string& j, subinst) {
+									switch(subincount){
+										case 0:
+										{
+											std::cout << j << std::endl;
+											break;
+										}
+										case 1:
+										{
+											std::cout << j << std::endl;
+											break;
+										}
+										case 2:
+										{
+											std::cout << j << std::endl;
+											break;
+										}
+										default:
+											break;
+									}
+									subincount++;
+						  }
+					  }
+					  subcount++;
+					}
+					//std::cout << "lines " <<tok << std::endl;
+					break;
+				}
+				case 3:
+				{
+					std::cout << "lines " <<tok << std::endl;
+					break;
+				}
+				case 4:
+				{
+					std::cout << "lines " <<tok << std::endl;
+					break;
+				}
+				case 5:
+				{
+					std::cout << "lines " <<tok << std::endl;
+					break;
+				}
+				case 6:
+				{
+					std::cout << "lines " <<tok << std::endl;
+					break;
+				}
+				default:
+					break;
+			}
+			count++;
+		}
+		return vat;
 	}
-	
 }
 
 int main(int argc, 	char* argv[])
@@ -580,6 +698,7 @@ int main(int argc, 	char* argv[])
 		Rtsp::Time *tms;
 		Rtsp::PT *pt;
 		Rtsp::AudioAttribute *at;
+		Rtsp::VideoAttribute *vt;
 		char *data = NULL;
 		int len = 0;
 		while( getline(infile,line))
@@ -616,4 +735,5 @@ int main(int argc, 	char* argv[])
 		tms  = sdp->SDP_GetTimeParameter();
 		pt = sdp->SDP_GetSDPAttributes();
 		at = sdp->SDP_GetAudioAttributes();
+		vt = sdp->SDP_GetVideoAttributes();
 }

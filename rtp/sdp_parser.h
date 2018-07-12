@@ -95,10 +95,11 @@ typedef struct {
 			int y2;
 		}cliprect;
 		
-		typedef struct {	
+		typedef struct {
+            char     *video_RTPAVP;	
 			int       rtpmap;
 			char     *codec_rate;
-			int       ftmp;
+			int       fmtp;
 			int       packetization_mode;
 			long      profile_level_id;
 			char     *sprop_parameter_sets;
@@ -139,6 +140,7 @@ class SDP_parser {
 		Time    *ttime;
 		PT      *ppt;
         AudioAttribute  *aat;
+		VideoAttribute  *vat; 
 	public:
 		SDP_parser();
 		SDP_parser(char* data, int len);
