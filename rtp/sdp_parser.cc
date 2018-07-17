@@ -9,6 +9,7 @@
 #include <boost/foreach.hpp>
 #include <vector>
 #include <stdio.h>
+#include <stdlib.h>
 
 
 
@@ -635,17 +636,27 @@ using namespace boost;
 									switch(subincount){
 										case 0:
 										{
-											std::cout << j << std::endl;
+											std::string delim = RTSP_SDP_ATTRIBUTE_PACKETIZATION_MODE;
+											std::string result = get_right_of_delim(j, delim);
+											char *packet = (char *)result.c_str();
+											vat->packetization_mode = atoi(packet);
+											std::cout << "Packetization Mode  " << vat->packetization_mode << std::endl;
 											break;
 										}
 										case 1:
 										{
-											std::cout << j << std::endl;
+											std::string delim = RTSP_SDP_ATTRIBUTE_PROFILE;
+											std::string result = get_right_of_delim(j,delim);
+											vat->profile_level_id = (char *)result.c_str();
+											std::cout << "Profile Level ID  " << result << std::endl;
 											break;
 										}
 										case 2:
 										{
-											std::cout << j << std::endl;
+											std::string delim = RTSP_SDP_ATTRIBUTE_SPROP_PARAMETER_SETS;
+											std::string result = get_right_of_delim(j,delim);
+											vat->sprop_parameter_sets = (char *)result.c_str();
+											std::cout << "Profile Level ID  " << result << std::endl;
 											break;
 										}
 										default:
@@ -661,22 +672,108 @@ using namespace boost;
 				}
 				case 3:
 				{
-					std::cout << "lines " <<tok << std::endl;
+					std::string delim = RTSP_SDP_ATTRIBUTE_CLIPRECT;
+					std::string result = get_right_of_delim(tok,delim);
+					std::string split_me(result);
+					  typedef std::vector<std::string> SubTokens;
+					  SubTokens subst;
+					  int subcount = 0;
+					  boost::split(subst, split_me,boost::is_any_of(","));
+					  vat->rect = (cliprect *)malloc(sizeof(cliprect));
+					  BOOST_FOREACH( const std::string& i, subst) {
+							if (subcount == 0)
+							{
+								char *x1 = (char *)i.c_str();
+								vat->rect->x1 = atoi(x1);
+								std::cout << "X1 value" << vat->rect->x1 << std::endl;
+							}
+							if (subcount == 1)
+							{
+								char *y1 = (char *)i.c_str();
+								vat->rect->y1 = atoi(y1);
+								std::cout << "Y1 value" << vat->rect->y1 << std::endl;
+							}
+							if (subcount == 2)
+							{
+								char *y2 = (char *)i.c_str();
+								vat->rect->y2 = atoi(y2);
+								std::cout << "Y2 value" << vat->rect->y2 << std::endl;
+							}
+							if (subcount == 3)
+							{
+								char *x2 = (char *)i.c_str();
+								vat->rect->x2 = atoi(x2);
+								std::cout << "X2 value" << vat->rect->x2 << std::endl;
+							}
+							subcount++;
+						  }
+					//std::cout << "lines " <<tok << std::endl;
 					break;
 				}
 				case 4:
 				{
-					std::cout << "lines " <<tok << std::endl;
+					std::string delim = RTSP_SDP_ATTRIBUTE_FRAMESIZE;
+					std::string result = get_right_of_delim(tok,delim);
+					std::string split_me(result);
+					  typedef std::vector<std::string> SubTokens;
+					  SubTokens subst;
+					  int subcount = 0;
+					  boost::split(subst, split_me,boost::is_any_of(" "));
+					  BOOST_FOREACH( const std::string& i, subst) {
+							if (subcount == 0)
+							{
+								char *frmrt = (char *)i.c_str();
+								vat->framesize = atoi(frmrt);
+								std::cout << "FrameSize :" << vat->framesize << std::endl;
+							}
+							if (subcount == 1)
+							{
+								std::string width_height(i);
+								typedef std::vector<std::string> SubinTokens;
+								SubinTokens subintk;
+								int subincount = 0;
+								boost::split(subintk, width_height,boost::is_any_of("-"));
+								BOOST_FOREACH( const std::string& j, subintk) {
+									if(subincount == 0)
+									{
+										char *wdth = (char *)j.c_str();
+										vat->width = atoi(wdth);
+										std::cout << " Width " << vat->width << std::endl;
+									}
+									if(subincount == 1)
+									{
+										char *hth = (char *)j.c_str();
+										vat->height = atoi(hth);
+										std::cout << " Height " << vat->height << std::endl;
+									}
+									subincount++;
+								}
+								//std::cout << "width-height" << i << std::endl;
+							}
+							subcount++;
+					  }
+					//std::cout << "lines " <<tok << std::endl;
 					break;
 				}
 				case 5:
 				{
-					std::cout << "lines " <<tok << std::endl;
+					std::string delim = RTSP_SDP_ATTRIBUTE_FRAMERATE;
+					std::string result = get_right_of_delim(tok,delim);
+					char *fmrate = (char *)result.c_str();
+					vat->framerate = fmrate;
+					std::cout << "FrameRate :" << result << std::endl;
+					//std::cout << "lines " << tok << std::endl;
 					break;
 				}
 				case 6:
 				{
-					std::cout << "lines " <<tok << std::endl;
+					std::string delim = RTSP_SDP_ATTRIBUTE_TRACKID;
+					std::string result = get_right_of_delim(tok,delim);
+					char *ctrl = (char *)result.c_str();
+					vat->control = ctrl;
+					std::cout << "Control :" << result << std::endl;
+					//std::cout << "lines " << tok << std::endl;
+					//std::cout << "lines " <<tok << std::endl;
 					break;
 				}
 				default:
@@ -688,7 +785,7 @@ using namespace boost;
 	}
 }
 
-int main(int argc, 	char* argv[])
+int main(int argc,char* argv[])
 {
 		std::string file,line;
 		std::ifstream infile("one.sdp");

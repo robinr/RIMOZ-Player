@@ -39,6 +39,7 @@
 #define RTSP_SDP_ATTRIBUTE_INDEXLENGTH             "indexlength="
 #define RTSP_SDP_ATTRIBUTE_INDEXDELTALENGTH        "indexdeltalength="
 #define RTSP_SDP_ATTRIBUTE_CONFIG                  "config="
+#define RTSP_SDP_ATTRIBUTE_PACKETIZATION_MODE      "packetization-mode="
 #define RTSP_SDP_ATTRIBUTE_SPROP_PARAMETER_SETS    "sprop-parameter-sets="
 #define RTSP_SDP_ATTRIBUTE_CLIPRECT                "cliprect:"
 #define RTSP_SDP_ATTRIBUTE_FRAMESIZE               "framesize:"
@@ -101,13 +102,13 @@ typedef struct {
 			char     *codec_rate;
 			int       fmtp;
 			int       packetization_mode;
-			long      profile_level_id;
+			char     *profile_level_id;
 			char     *sprop_parameter_sets;
             cliprect *rect;                                          
 			int       framesize;
             int       width;
 			int       height;
-			float     framerate;
+			char     *framerate;
             char     *control;
 		}VideoAttribute;
 
