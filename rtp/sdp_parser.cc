@@ -20,6 +20,11 @@ using namespace std;
 using namespace boost;
 
 	SDP_parser::SDP_parser() {
+			size = 0;
+                        decode = 0;
+
+                         // RTSP Header Parameters initialized to NULL
+
 			protocol_version = NULL;
 			cseq_num = NULL;
 			server = NULL;
@@ -30,11 +35,20 @@ using namespace boost;
 			time = NULL;
 			content_type = NULL;
 			content_session = NULL;
-			_payload = NULL;
-			size = 0;
+                        timeout = NULL;
+
+                         // RTSP Application SDP Holder 
+                         version = 0;
+			 owner = NULL;
+			 session_name = NULL;
+			 connect = NULL;
+			 ttime = NULL;
+			 ppt = NULL;
+			 aat = NULL;
+			 vat = NULL; 
 	}
 
-	SDP_parser::SDP_parser(char *data, int len)
+	SDP_parser::SDP_parser(std::string data, int len)
 	{
 			_payload = data;
 			size = len;
@@ -43,19 +57,211 @@ using namespace boost;
 
 	SDP_parser::~SDP_parser()
 	{
-			_payload = NULL;
 			size = 0;
 			decode = false;
 	}
 
 	bool SDP_parser::SDP_Decode()
 	{
+             std::string line;
+             int linecount = 1;
 		if(size == 0)
 		{
 			std::cout <<"SDP data is empty" << std::endl;
 			decode = false;
 			
 		}
+                else
+                {
+                   vector<std::string> feeddata;
+                   split_regex(feeddata, _payload, boost::regex("(\r\n)+"));
+                   for (auto& line : feeddata)
+		   {
+                       	switch(linecount) 
+                       	{
+                             case 1 :
+                                     {
+                        		input = line;
+		                        bool one = IsRTSPOne();
+		                        std::cout << one << std::endl;
+                                        break;
+                                     }
+                             case 2 :
+                                     {
+                                        input = line;
+		                        std::cout << SDP_GetCSeq() << std::endl;
+                                        break; 
+                                     }
+                             case 3: 
+                                     {
+                                        input = line;
+		                        char *server = SDP_GetStreamingServer();
+                                        break;
+                                     }
+                             case 4: 
+                                     {
+                                        input = line;
+					char *cache  = SDP_GetCacheControl();
+                                        break;
+                                     }
+                             case 5: 
+                                     {
+                                        input = line;
+		                        char *expire = SDP_GetExpires();
+                                        break;
+                                     }
+                             case 6:
+                                     {
+                                        input = line;
+					int cnt_len = SDP_GetContentLength();
+					std::cout << cnt_len << std::endl;
+                                        break;
+                                     }
+                             case 7:
+                                     {
+                                        input = line;
+					char *base_url = SDP_GetContentBaseUrl();
+                                        break;
+                                     }
+                             case 8: 
+                                     {
+                                        input = line;
+					char *tm = SDP_GetTimeStamp();
+                                        break;
+                                     }
+                             case 9:
+                                     {
+                                        input = line;
+					char *cnt_type = SDP_GetContentType();
+					break;
+				     }
+			     case 10: 
+				     {
+                                        input = line;
+					char *id = SDP_GetSessionId();
+					int  tmout = SDP_GetTimeout();
+					std::cout << tmout << std::endl;
+					break;
+				     }
+			     /*case 11:
+				     {
+                                        break;
+				     } */
+                             case 11: 
+                                     {
+                                        input = line;
+					int ver = SDP_GetVersion();
+					std::cout << "version of v=" << ver << std::endl;
+                                        break;
+                                     }
+                             case 12:
+				     {
+                                        input = line;
+		                        owner  = SDP_GetOwnerInfo();
+					break;
+				     }
+			     case 13:
+				     {
+                                        input = line;
+					session_name = SDP_GetSessionName();
+					break;
+				     }
+			     case 14:
+				     {
+                                        input = line;
+					connect = SDP_GetConnectionInfo();
+					break;
+				     }
+			     case 15:
+				     {
+                                        input = line;
+					ttime  = SDP_GetTimeParameter();
+					break;
+				     }
+			     case 16:  // 16, 17, 18 (SDP parameters parsed at once grouped in SDP_GetSDPAttributes())
+                                     {      
+                                        input = line;
+                                        input = input+RTSP_SDP_CRLF;
+                                        break;
+                                     }
+			     case 17:
+                                     {
+                                        input = input+line+RTSP_SDP_CRLF;
+                                        break;
+                                     }
+			     case 18:	
+				     {
+                                        input = input+line+RTSP_SDP_CRLF;
+					ppt = SDP_GetSDPAttributes();
+					break;
+				     }
+			     case 19:// 19, 20, 21, 22 (audio parameters parsed at once grouped in SDP_GetAudioAttributes))
+				     {
+                                        input = line;
+                                        input = input+RTSP_SDP_CRLF;
+                                        break;
+			             }	
+			     case 20:
+                                     {
+                                        input = input+line+RTSP_SDP_CRLF;
+                                        break;
+                                     }
+			     case 21:
+                                     {
+                                        input = input+line+RTSP_SDP_CRLF;
+                                        break;
+                                     }
+			     case 22:
+				     {
+                                        input = input+line+RTSP_SDP_CRLF;
+					aat = SDP_GetAudioAttributes();
+					break;
+				     }
+			     case 23://23,24,25,26,27,28,29 (video parameters parsed at once in SDP_GetVideoAttributes))
+				     {
+                                        input = line;
+                                        input = input+RTSP_SDP_CRLF;
+                                        break;
+			             }	
+			     case 24:
+                                     {
+                                        input = input+line+RTSP_SDP_CRLF;
+                                        break;
+                                     }
+			     case 25:
+                                     {
+                                        input = input+line+RTSP_SDP_CRLF;
+                                        break;
+                                     }
+			     case 26:
+                                     {
+                                        input = input+line+RTSP_SDP_CRLF;
+                                        break;
+                                     }
+			     case 27:
+                                     {
+                                        input = input+line+RTSP_SDP_CRLF;
+                                        break;
+                                     }
+			     case 28:
+                                     {
+                                        input = input+line+RTSP_SDP_CRLF;
+                                        break;
+                                     }
+			     case 29:
+				     {
+                                        input = input+line+RTSP_SDP_CRLF;
+                                        std::cout << "In SDP_Decode" << input << std::endl;
+					vat = SDP_GetVideoAttributes();
+                                        decode = true;
+					break;
+				     }
+			     default:
+					break;
+			}
+			linecount++;
+                    }
+                }
 		return decode;
 	} 
 
@@ -66,7 +272,7 @@ using namespace boost;
 	
 	bool SDP_parser::IsRTSPOne()
 	{
-		std::string input = "RTSP/1.0 200 OK";
+		//std::string input = "RTSP/1.0 200 OK";
 		std::string token = RTSP_VERSION_ONE;
 		
 		return contains(input,token);
@@ -74,7 +280,7 @@ using namespace boost;
 
 	int SDP_parser::SDP_GetCSeq()
 	{
-		std::string input = "CSeq: 1";
+		//std::string input = "CSeq: 1";
 		std::string token = RTSP_SDP_CSEQ;
 		
 		std::string result = get_right_of_delim(input,token);
@@ -85,7 +291,7 @@ using namespace boost;
 
 	char* SDP_parser::SDP_GetStreamingServer()
 	{
-		std::string input = "Server: Wowza Streaming Engine 4.7.5 build21763";
+		//std::string input = "Server: Wowza Streaming Engine 4.7.5 build21763";
                 std::string token = RTSP_SDP_SERVER;
 
                 std::string result = get_right_of_delim(input, token);
@@ -96,7 +302,7 @@ using namespace boost;
 
 	char* SDP_parser::SDP_GetCacheControl()
 	{
-		std::string input = "Cache-Control: no-cache";
+		//std::string input = "Cache-Control: no-cache";
                 std::string token = RTSP_SDP_CACHE_CONTROL;
 
                 std::string result = get_right_of_delim(input, token);
@@ -107,7 +313,7 @@ using namespace boost;
 
 	char* SDP_parser::SDP_GetExpires()
 	{
-		std::string input = "Expires: Mon, 2 Jul 2018 12:47:07 IST";
+		//std::string input = "Expires: Mon, 2 Jul 2018 12:47:07 IST";
                 std::string token = RTSP_SDP_EXPIRE;
 
                 std::string result = get_right_of_delim(input, token);
@@ -118,7 +324,7 @@ using namespace boost;
 
 	int SDP_parser::SDP_GetContentLength()
 	{
-               std::string input = "Content-Length: 569";
+               //std::string input = "Content-Length: 569";
                std::string token = RTSP_SDP_CONTENT_LENGTH;
 
                std::string result = get_right_of_delim(input, token);
@@ -129,145 +335,145 @@ using namespace boost;
 
 	char* SDP_parser::SDP_GetContentBaseUrl()
 	{
-			   std::string input = "Content-Base: rtsp://192.168.1.6:1935/vod/one.mp4/";
-			   std::string token = RTSP_SDP_CONTENT_BASE;
+	   	//std::string input = "Content-Base: rtsp://192.168.1.6:1935/vod/one.mp4/";
+	   	std::string token = RTSP_SDP_CONTENT_BASE;
 			   
-			   std::string result = get_right_of_delim(input, token);
-			   std::cout << result << std::endl;
-			   content_base_url = (char *)result.c_str();
-			   return content_base_url;
+	   	std::string result = get_right_of_delim(input, token);
+	   	std::cout << result << std::endl;
+	  	content_base_url = (char *)result.c_str();
+	  	return content_base_url;
 	}
 
 	char* SDP_parser::SDP_GetTimeStamp()
 	{
-			  std::string input = "Date: Mon, 2 Jul 2018 12:47:07 IST";
-			  std::string token = RTSP_SDP_DATE;
-			  
-			  std::string result = get_right_of_delim(input, token);
-			  std::cout << result << std::endl;
-			  time = (char *)result.c_str();
-			  return time;
+		//std::string input = "Date: Mon, 2 Jul 2018 12:47:07 IST";
+	  	std::string token = RTSP_SDP_DATE;
+		  
+		std::string result = get_right_of_delim(input, token);
+	  	std::cout << result << std::endl;
+		time = (char *)result.c_str();
+	        return time;
 	}
 
 	char* SDP_parser::SDP_GetContentType()
 	{
-		      std::string input = "Content-Type: application/sdp";
-			  std::string token = RTSP_SDP_CONTENT_TYPE;
+	      	//std::string input = "Content-Type: application/sdp";
+	      	std::string token = RTSP_SDP_CONTENT_TYPE;
 			  
-			  std::string result = get_right_of_delim(input, token);
-			  std::cout << result << std::endl;
-			  content_type = (char *)result.c_str();
-			  return content_type;
+	      	std::string result = get_right_of_delim(input, token);
+	  	std::cout << result << std::endl;
+		content_type = (char *)result.c_str();
+		return content_type;
 	}
 
 	char* SDP_parser::SDP_GetSessionId()
 	{
-			std::string input = "Session: 1177817050;timeout=60";
-			std::string token = RTSP_SDP_SESSION;
+		//std::string input = "Session: 1177817050;timeout=60";
+		std::string token = RTSP_SDP_SESSION;
 			  
-			std::string intrim = get_right_of_delim(input, token);
-			std::string result =  intrim.substr(0,intrim.find(";",0));
-			std::cout << result << std::endl;
-			content_session = (char *)result.c_str();
-			return content_session;
+		std::string intrim = get_right_of_delim(input, token);
+		std::string result =  intrim.substr(0,intrim.find(";",0));
+		std::cout << result << std::endl;
+		content_session = (char *)result.c_str();
+		return content_session;
 	}
 
 	int SDP_parser::SDP_GetTimeout()
 	{
-		    std::string input = "Session: 1177817050;timeout=60";
-			std::string token = RTSP_SDP_SESSION;
-			std::string token_time = RTSP_SDP_ATTRIBUTE_TIMEOUT;
+	        //std::string input = "Session: 1177817050;timeout=60";
+		std::string token = RTSP_SDP_SESSION;
+		std::string token_time = RTSP_SDP_ATTRIBUTE_TIMEOUT;
 			  
-			std::string intrim = get_right_of_delim(input, token);
-			std::string result = get_right_of_delim(intrim,token_time);
-            std::cout << result << std::endl;
-			timeout = (char *)result.c_str(); 
-			return atoi(timeout);
+		std::string intrim = get_right_of_delim(input, token);
+		std::string result = get_right_of_delim(intrim,token_time);
+                std::cout << result << std::endl;
+		timeout = (char *)result.c_str(); 
+		return atoi(timeout);
 	}
 	
 	int SDP_parser::SDP_GetVersion()
-    {
-			std::string input = "v=0";
-			char *version = (char *)input.c_str();
+        {
+		//std::string input = "v=0";
+		char *version = (char *)input.c_str();
 			
-			if ((version[0] == 'v') && (version[1] == '='))
-			{
-				char *number = (version + 2);
-				return atoi(number);
-			}
-		return 0;
+		if ((version[0] == 'v') && (version[1] == '='))
+		{
+			char *number = (version + 2);
+		return atoi(number);
+		}
+	   return 0;
 	}          
 	
 	Owner* SDP_parser::SDP_GetOwnerInfo()
 	{
-			std::string input = "o=- 1177817050 1177817050 IN IP4 127.0.0.1";
-			char *own = (char *)input.c_str();
+		//std::string input = "o=- 1177817050 1177817050 IN IP4 127.0.0.1";
+		char *own = (char *)input.c_str();
 			
-			owner = (Owner *)malloc(sizeof(Owner));
+		owner = (Owner *)malloc(sizeof(Owner));
 			
-			if ((own[0] == 'o') && (own[1] == '='))
-			{
-				typedef std::vector<std::string> Tokens;
-				Tokens tokens;
-				boost::split(tokens, input, boost::is_any_of(" "));
+		if ((own[0] == 'o') && (own[1] == '='))
+		{
+			typedef std::vector<std::string> Tokens;
+			Tokens tokens;
+			boost::split(tokens, input, boost::is_any_of(" "));
 				
-				int size = tokens.size();
-				int count = 0;
-				BOOST_FOREACH( const std::string& i, tokens) {
-					switch(count){
-						case 0:
-						{
-								std::cout << "Owner " << own[2] << std::endl;
-								char *value = (char *)i.c_str();
-								owner->username = (value + 2);
-								break;
-						}
-						case 1:
-						{
-						        char *sessionID = (char *)i.c_str();
-								int ID = atoi(sessionID);
-								std::cout << "Owner SessionID " << i << std::endl;
-								owner->sessionID = ID;
-								break;
-						}
-						case 2:
-						{
-								char *sessionVer = (char *)i.c_str();
-								int Ver = atoi(sessionVer);
-								std::cout << "Owner Version " << i << std::endl;
-								owner->session_version = Ver;
-								break;
-						}
-						case 3:
-						{
-								owner->networktype = (char *)i.c_str();
-								std::cout << "Owner Network Type " << i << std::endl;
-								break;
-						}
-						case 4:
-						{
-								owner->address_type = (char *)i.c_str();
-								std::cout << "Owner Address Type " << i << std::endl;
-								break;
-						}
-						case 5:
-						{
-								owner->address = (char *)i.c_str();
-								std::cout << "Owner IP Address " << i << std::endl;
-								break;
-						}
-						default:
-								break;
+			int size = tokens.size();
+			int count = 0;
+			BOOST_FOREACH( const std::string& i, tokens) {
+				switch(count){
+					case 0:
+					{
+						std::cout << "Owner " << own[2] << std::endl;
+						char *value = (char *)i.c_str();
+						owner->username = (value + 2);
+						break;
 					}
-					count++;
+					case 1:
+					{
+				        	char *sessionID = (char *)i.c_str();
+						int ID = atoi(sessionID);
+						std::cout << "Owner SessionID " << i << std::endl;
+						owner->sessionID = ID;
+						break;
+					}
+					case 2:
+					{
+						char *sessionVer = (char *)i.c_str();
+						int Ver = atoi(sessionVer);
+						std::cout << "Owner Version " << i << std::endl;
+						owner->session_version = Ver;
+						break;
+					}
+					case 3:
+					{
+						owner->networktype = (char *)i.c_str();
+						std::cout << "Owner Network Type " << i << std::endl;
+						break;
+					}
+					case 4:
+					{
+						owner->address_type = (char *)i.c_str();
+						std::cout << "Owner Address Type " << i << std::endl;
+						break;
+					}
+					case 5:
+					{
+						owner->address = (char *)i.c_str();
+						std::cout << "Owner IP Address " << i << std::endl;
+						break;
+					}
+					default:
+					break;
 				}
+				count++;
 			}
-			return owner;
+		}
+		return owner;
 	}
 	
 	char  *SDP_parser::SDP_GetSessionName()
 	{
-		std::string input ="s=one.mp4";
+		//std::string input ="s=one.mp4";
 		char *s = (char *)input.c_str();
 		if((s[0] == 's') && (s[1] == '='))
 		{
@@ -279,7 +485,7 @@ using namespace boost;
 	}
 	Connect *SDP_parser::SDP_GetConnectionInfo()   
 	{
-		std::string input = "c=IN IP4 0.0.0.0";
+		//std::string input = "c=IN IP4 0.0.0.0";
 		char *conn = (char *)input.c_str();
 		if((conn[0] == 'c') && (conn[1] == '='))
 		{
@@ -294,26 +500,26 @@ using namespace boost;
 				switch(count) {
 					case 0:
 					{
-							char *network = (char *)i.c_str();
-							connect->networktype = (network + 2);
-							std::string val(connect->networktype);
-							std::cout << "Network Type :" << val << std::endl;
-							break;
+						char *network = (char *)i.c_str();
+						connect->networktype = (network + 2);
+						std::string val(connect->networktype);
+						std::cout << "Network Type :" << val << std::endl;
+						break;
 					}
 					case 1:
 					{
-							std::cout << "Address Type " << i << std::endl;
-							connect->address_type = (char *)i.c_str();
-							break;
+						std::cout << "Address Type " << i << std::endl;
+						connect->address_type = (char *)i.c_str();
+						break;
 					}
 					case 2:
 					{
-							std::cout << "Address " << i << std::endl;
-						    connect->address = (char *)i.c_str();
-							break;
+						std::cout << "Address " << i << std::endl;
+					    	connect->address = (char *)i.c_str();
+						break;
 					}
 					default:
-							break;
+						break;
 				}
 				count++;
 			}
@@ -323,7 +529,7 @@ using namespace boost;
 		
 	Time *SDP_parser::SDP_GetTimeParameter()    
 	{
-		std::string input = "t=0 0";
+		//std::string input = "t=0 0";
 		char *timeparam = (char *) input.c_str();
 		if((timeparam[0] == 't') && (timeparam[1] = '='))
 		{
@@ -338,22 +544,22 @@ using namespace boost;
 				switch(count) {
 					case 0:
 					{
-							char* stm = (char *)i.c_str();
-							ttime->start_time = (stm + 2);
-							std::string start_tm(ttime->start_time);
-							std::cout << start_tm << std::endl;
-							break;
+						char* stm = (char *)i.c_str();
+						ttime->start_time = (stm + 2);
+						std::string start_tm(ttime->start_time);
+						std::cout << start_tm << std::endl;
+						break;
 					}
 					case 1:
 					{
-							char* sto = (char *)i.c_str();
-							ttime->stop_time = (sto + 2);
-							std::string stop_tm(ttime->stop_time);
-							std::cout << stop_tm << std::endl;
-							break;
+						char* sto = (char *)i.c_str();
+						ttime->stop_time = (sto + 2);
+						std::string stop_tm(ttime->stop_time);
+						std::cout << stop_tm << std::endl;
+						break;
 					}
 					default:
-						    break;
+					    break;
 				}
 				count++;
 			}
@@ -365,7 +571,7 @@ using namespace boost;
 	{
 		vector<std::string> res;
 		int count = 0;
-		std::string input = "a=sdplang:en\r\na=range:npt=0- 150.883\r\na=control:*";
+		//std::string input = "a=sdplang:en\r\na=range:npt=0- 150.883\r\na=control:*";
 		split_regex(res, input, boost::regex("(\r\n)+"));
 		ppt = (PT *)malloc(sizeof(PT));
 		for (auto& tok : res) 
@@ -414,7 +620,7 @@ using namespace boost;
 	{
 		vector<std::string> res;
 		int count = 0;
-		std::string input = "m=audio 0 RTP/AVP 96\r\na=rtpmap:96 mpeg4-generic/44100/2\r\na=fmtp:96 profile-level-id=1;mode=AAC-hbr;sizelength=13;indexlength=3;indexdeltalength=3;config=1210\r\na=control:trackID=1\r\n";
+		// std::string input = "m=audio 0 RTP/AVP 96\r\na=rtpmap:96 mpeg4-generic/44100/2\r\na=fmtp:96 profile-level-id=1;mode=AAC-hbr;sizelength=13;indexlength=3;indexdeltalength=3;config=1210\r\na=control:trackID=1\r\n";
 		split_regex(res, input, boost::regex("(\r\n)+"));
         aat = (AudioAttribute *)malloc(sizeof(AudioAttribute));
 		for (auto& tok : res) 
@@ -424,7 +630,7 @@ using namespace boost;
 				{
 					  std::string token = RTSP_SDP_ATTRIBUTE_MEDIAID;
 					  std::string result = get_right_of_delim(tok,token);
-				      aat->audio_RTPAVP = (char *)result.c_str();
+				          aat->audio_RTPAVP = (char *)result.c_str();
 					  std::cout << "RTPAVP" << result << std::endl;
 					  break;
 				}
@@ -477,75 +683,74 @@ using namespace boost;
 					          int subincount = 0;
 					          boost::split(subinst, split_inme,boost::is_any_of(";"));
 							  
-								BOOST_FOREACH( const std::string& j, subinst) {
-									switch(subincount){
-										case 0:
-										{
-											std::string in_delim = RTSP_SDP_ATTRIBUTE_PROFILE;
-											std::string profile = get_right_of_delim(j,in_delim);
-											char *prof = (char *)profile.c_str();
-											aat->profile_level_id = atoi(prof);
-											std::cout << "profile id : " << aat->profile_level_id << std::endl;
-											break;
-										}
-										case 1:
-										{
-											std::string in_delim = RTSP_SDP_ATTRIBUTE_MODE;
-											std::string mode = get_right_of_delim(j,in_delim);
-											char *md = (char *)mode.c_str();
-											aat->mode = md;
-											std::cout << "mode : " << mode << std::endl;
-											break;
-										}
-										case 2:
-										{
-											std::string in_delim =  RTSP_SDP_ATTRIBUTE_SIZELENGTH;
-											std::string sizelength = get_right_of_delim(j,in_delim);
-											char *szlen = (char *)sizelength.c_str();
-											aat->sizelength = atoi(szlen);
-											std::cout << "size length : " << aat->sizelength << std::endl;
-											break;
-										}
-										case 3:
-										{
-											std::string in_delim = RTSP_SDP_ATTRIBUTE_INDEXLENGTH;
-											std::string idxlength = get_right_of_delim(j, in_delim);
-										    char *idlen = (char *)idxlength.c_str();
-											aat->indexlength = atoi(idlen);
-											std::cout << "index length :" << aat->indexlength << std::endl;
-											break;
-										}
-										case 4:
-										{
-											std::string in_delim = RTSP_SDP_ATTRIBUTE_INDEXDELTALENGTH;
-											std::string idxdeltalen = get_right_of_delim(j, in_delim);
-											char* iddellen = (char *)idxdeltalen.c_str();
-											aat->indexdeltalength = atoi(iddellen);
-											std::cout << "index delta length :" << aat->indexdeltalength << std::endl;
-											break;
-										}
-										case 5:
-										{
-											std::string in_delim = RTSP_SDP_ATTRIBUTE_CONFIG;
-											std::string cfg = get_right_of_delim(j, in_delim);
-											char *cfgid = (char *)cfg.c_str();
-											aat->config = atoi(cfgid);
-											std::cout << "config : " << aat->config << std::endl;
-											break;
-										}
-										default:
-											break;
-									}
-									subincount++;	
-									//std::cout << "tokens" << j << std::endl;
-								}
-								
+						  BOOST_FOREACH( const std::string& j, subinst) {
+							switch(subincount){
+							case 0:
+							{
+								std::string in_delim = RTSP_SDP_ATTRIBUTE_PROFILE;
+								std::string profile = get_right_of_delim(j,in_delim);
+								char *prof = (char *)profile.c_str();
+								aat->profile_level_id = atoi(prof);
+								std::cout << "profile id : " << aat->profile_level_id << std::endl;
+								break;
 							}
-							  //std::cout << "part 2" << i << std::endl;
-						subcount++;
+							case 1:
+							{
+								std::string in_delim = RTSP_SDP_ATTRIBUTE_MODE;
+								std::string mode = get_right_of_delim(j,in_delim);
+								char *md = (char *)mode.c_str();
+								aat->mode = md;
+								std::cout << "mode : " << mode << std::endl;
+								break;
+							}
+							case 2:
+							{
+								std::string in_delim =  RTSP_SDP_ATTRIBUTE_SIZELENGTH;
+								std::string sizelength = get_right_of_delim(j,in_delim);
+								char *szlen = (char *)sizelength.c_str();
+								aat->sizelength = atoi(szlen);
+								std::cout << "size length : " << aat->sizelength << std::endl;
+								break;
+							}
+							case 3:
+							{
+								std::string in_delim = RTSP_SDP_ATTRIBUTE_INDEXLENGTH;
+								std::string idxlength = get_right_of_delim(j, in_delim);
+							        char *idlen = (char *)idxlength.c_str();
+								aat->indexlength = atoi(idlen);
+								std::cout << "index length :" << aat->indexlength << std::endl;
+								break;
+							}
+							case 4:
+							{
+								std::string in_delim = RTSP_SDP_ATTRIBUTE_INDEXDELTALENGTH;
+								std::string idxdeltalen = get_right_of_delim(j, in_delim);
+								char* iddellen = (char *)idxdeltalen.c_str();
+								aat->indexdeltalength = atoi(iddellen);
+								std::cout << "index delta length :" << aat->indexdeltalength << std::endl;
+								break;
+							}
+							case 5:
+							{
+								std::string in_delim = RTSP_SDP_ATTRIBUTE_CONFIG;
+								std::string cfg = get_right_of_delim(j, in_delim);
+								char *cfgid = (char *)cfg.c_str();
+								aat->config = atoi(cfgid);
+								std::cout << "config : " << aat->config << std::endl;
+								break;
+							}
+							default:
+								break;
 						}
+						subincount++;	
+									//std::cout << "tokens" << j << std::endl;
+						}
+					}
+							  //std::cout << "part 2" << i << std::endl;
+					subcount++;
+					}
 					//std::cout << tok << std::endl;
-					break;
+				break;
 				}
 				case 3:
 				{
@@ -553,7 +758,7 @@ using namespace boost;
 					  std::string result = get_right_of_delim(tok,deli);
 					  char *track = (char *)result.c_str();
 					  aat->control = track;
-				      std::cout << result << std::endl;
+				      	  std::cout << result << std::endl;
 					  break;
 				}
 				default:
@@ -567,7 +772,7 @@ using namespace boost;
 	VideoAttribute  *SDP_parser::SDP_GetVideoAttributes()
 	{
 		vector<std::string> res;
-		std::string input ="m=video 0 RTP/AVP 97\r\na=rtpmap:97 H264/90000\r\na=fmtp:97 packetization-mode=1;profile-level-id=4D401E;sprop-parameter-sets=Z01AHuiAUBf8uAiAAAH0gABdwAeLFok=,aOvvIA==\r\na=cliprect:0,0,360,640\r\na=framesize:97 640-360\r\na=framerate:23.98\r\na=control:trackID=2";
+		// std::string input ="m=video 0 RTP/AVP 97\r\na=rtpmap:97 H264/90000\r\na=fmtp:97 packetization-mode=1;profile-level-id=4D401E;sprop-parameter-sets=Z01AHuiAUBf8uAiAAAH0gABdwAeLFok=,aOvvIA==\r\na=cliprect:0,0,360,640\r\na=framesize:97 640-360\r\na=framerate:23.98\r\na=control:trackID=2";
 		int count = 0;
 		split_regex(res, input, boost::regex("(\r\n)+"));
 		vat = (VideoAttribute *)malloc(sizeof(VideoAttribute));
@@ -596,7 +801,7 @@ using namespace boost;
 							  std::string resultrtp = get_right_of_delim(i ,indelim);
 							  char *rtpmap = (char *)resultrtp.c_str();
 							  vat->rtpmap = atoi(rtpmap);
-							  std::cout << "inner value of rtpmap " << aat->rtpmap << std::endl;
+							  std::cout << "inner value of rtpmap " << vat->rtpmap << std::endl;
 						  }
 						  if(subcount == 1)
 						  {
@@ -604,7 +809,6 @@ using namespace boost;
 						  }
 						subcount++;
 					}
-					//std::cout << "lines " << tok << std::endl;
 					break;
 				}
 				case 2:
@@ -632,43 +836,43 @@ using namespace boost;
 					          int subincount = 0;
 					          boost::split(subinst, split_inme,boost::is_any_of(";"));
 							  
-								BOOST_FOREACH( const std::string& j, subinst) {
-									switch(subincount){
-										case 0:
-										{
-											std::string delim = RTSP_SDP_ATTRIBUTE_PACKETIZATION_MODE;
-											std::string result = get_right_of_delim(j, delim);
-											char *packet = (char *)result.c_str();
-											vat->packetization_mode = atoi(packet);
-											std::cout << "Packetization Mode  " << vat->packetization_mode << std::endl;
-											break;
-										}
-										case 1:
-										{
-											std::string delim = RTSP_SDP_ATTRIBUTE_PROFILE;
-											std::string result = get_right_of_delim(j,delim);
-											vat->profile_level_id = (char *)result.c_str();
-											std::cout << "Profile Level ID  " << result << std::endl;
-											break;
-										}
-										case 2:
-										{
-											std::string delim = RTSP_SDP_ATTRIBUTE_SPROP_PARAMETER_SETS;
-											std::string result = get_right_of_delim(j,delim);
-											vat->sprop_parameter_sets = (char *)result.c_str();
-											std::cout << "Profile Level ID  " << result << std::endl;
-											break;
-										}
-										default:
-											break;
-									}
-									subincount++;
-						  }
+						BOOST_FOREACH( const std::string& j, subinst) {
+						switch(subincount){
+						case 0:
+						{
+							std::string delim = RTSP_SDP_ATTRIBUTE_PACKETIZATION_MODE;
+							std::string result = get_right_of_delim(j, delim);
+							char *packet = (char *)result.c_str();
+							vat->packetization_mode = atoi(packet);
+							std::cout << "Packetization Mode  " << vat->packetization_mode << std::endl;
+							break;
+						}
+						case 1:
+						{
+							std::string delim = RTSP_SDP_ATTRIBUTE_PROFILE;
+							std::string result = get_right_of_delim(j,delim);
+							vat->profile_level_id = (char *)result.c_str();
+							std::cout << "Profile Level ID  " << result << std::endl;
+							break;
+						}
+						case 2:
+						{
+							std::string delim = RTSP_SDP_ATTRIBUTE_SPROP_PARAMETER_SETS;
+							std::string result = get_right_of_delim(j,delim);
+							vat->sprop_parameter_sets = (char *)result.c_str();
+							std::cout << "Profile Level ID  " << result << std::endl;
+							break;
+						}
+						default:
+							break;
+						}
+						subincount++;
 					  }
-					  subcount++;
-					}
+				  }
+				  subcount++;
+				}
 					//std::cout << "lines " <<tok << std::endl;
-					break;
+				break;
 				}
 				case 3:
 				{
@@ -767,10 +971,11 @@ using namespace boost;
 				}
 				case 6:
 				{
-					std::string delim = RTSP_SDP_ATTRIBUTE_TRACKID;
+					std::string delim = RTSP_SDP_ATTRIBUTE_CONTROL;
 					std::string result = get_right_of_delim(tok,delim);
 					char *ctrl = (char *)result.c_str();
 					vat->control = ctrl;
+					//std::cout << "Token :" << tok << std::endl;
 					std::cout << "Control :" << result << std::endl;
 					//std::cout << "lines " << tok << std::endl;
 					//std::cout << "lines " <<tok << std::endl;
@@ -789,48 +994,18 @@ int main(int argc,char* argv[])
 {
 		std::string file,line;
 		std::ifstream infile("one.sdp");
-		Rtsp::SDP_parser *sdp;
-		Rtsp::Owner *owns;
-		Rtsp::Connect *cons;
-		Rtsp::Time *tms;
-		Rtsp::PT *pt;
-		Rtsp::AudioAttribute *at;
-		Rtsp::VideoAttribute *vt;
+		Rtsp::SDP_parser *sdp = new Rtsp::SDP_parser();
 		char *data = NULL;
 		int len = 0;
+                int linecount = 1;
 		while( getline(infile,line))
 		{
 			line = line+RTSP_SDP_CRLF;
 			file = file+line;
-			
-		}
+			linecount++;
+		} 
 		std::cout << file << std::endl;
 		len = file.length();
-		//data = new char[len+1];
-		data = (char *)file.c_str();
-		sdp = new Rtsp::SDP_parser(data,len);
-		bool one = sdp->IsRTSPOne();
-		std::cout << one << std::endl;
-		std::cout << sdp->SDP_GetCSeq() << std::endl;
-		
-		char *server = sdp->SDP_GetStreamingServer();
-		char *cache  = sdp->SDP_GetCacheControl();
-		char *expire = sdp->SDP_GetExpires();
-		int cnt_len = sdp->SDP_GetContentLength();
-		std::cout << cnt_len << std::endl;
-		char *base_url = sdp->SDP_GetContentBaseUrl();
-		char *tm = sdp->SDP_GetTimeStamp();
-		char *cnt_type = sdp->SDP_GetContentType();
-		char *id = sdp->SDP_GetSessionId();
-		int  tmout = sdp->SDP_GetTimeout();
-		std::cout << tmout << std::endl;
-		int ver = sdp->SDP_GetVersion();
-		std::cout << "version of v=" << ver << std::endl;
-		owns = sdp->SDP_GetOwnerInfo();
-		char *sess = sdp->SDP_GetSessionName();
-		cons = sdp->SDP_GetConnectionInfo();
-		tms  = sdp->SDP_GetTimeParameter();
-		pt = sdp->SDP_GetSDPAttributes();
-		at = sdp->SDP_GetAudioAttributes();
-		vt = sdp->SDP_GetVideoAttributes();
+		sdp = new Rtsp::SDP_parser(file,len);
+                bool parsed = sdp->SDP_Decode();
 }
