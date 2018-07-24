@@ -93,6 +93,7 @@
     </Configuration>
   </Settings>
   <VirtualDirectory Name="src">
+    <File Name="../../rtp/one.sdp"/>
     <File Name="../../rtp/sdp_parser.cc"/>
     <File Name="../../rtp/sdp_parser.h"/>
     <File Name="../../rtp/rtsp_receiver.h"/>
