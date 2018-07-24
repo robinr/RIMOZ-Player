@@ -99,10 +99,15 @@ namespace Rtp
          unsigned int paysize;
          unsigned char payload[RTP_BUFFER_SIZE];
          int nal_type;
+		 bool parse = true;
 
-         rtp_header = new RTP_Header((char *)raw, (size_t)size);
-
-         if(rtp_header->RTP_IsParsed() == false)
+		 std::cout << "rtp_length " << rtp_length << std::endl;
+		 if(rtp_length > 12)
+		 {
+			rtp_header = new RTP_Header((char *)raw, (size_t)size);
+			parse = rtp_header->RTP_IsParsed();
+         //std::cout << "value of RTP_Parser" << parse << std::endl; 
+         if(parse == false)
          {
                 rtp_identifier = rtp_header->RTP_GetSequenceNumber();
                 raw_offset = rtp_header->offset;
@@ -117,7 +122,7 @@ namespace Rtp
                 /* Single NAL unit packet */
                 nal_type = nal_header->RTP_GetNalType();
                 std::cout << "Nal Type is ===>" << nal_type << std::endl;
-
+			
                 if(nal_type >= NAL_TYPE_SINGLE_NAL_MIN &&
                    nal_type <= NAL_TYPE_SINGLE_NAL_MAX) {
 
@@ -195,8 +200,9 @@ namespace Rtp
                  highest_seq = rtp_header->RTP_GetSequenceNumber();
           }
         }
+	  }
          //RTP_Stats_Print();
          return raw_offset;
-     }
+	}
 
 }

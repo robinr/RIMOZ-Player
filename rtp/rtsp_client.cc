@@ -2,18 +2,23 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <iostream>
+#include <string>
+#include <algorithm>
+#include <sstream>
 #include <stdint.h>
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
 #include <boost/asio.hpp>
 #include <vector>
+#include <stdlib.h>
 #include "http_header.hpp"
 #include "rtp_header.h"
 #include "rtp_nal.h"
 #include "rtp_stats.h"
 #include "rtp_stream.h"
 #include "rtsp_receiver.h"
+#include "sdp_parser.h"
 
 using namespace std;
 using namespace Rtp;
@@ -58,7 +63,11 @@ int main (int argc, char* argv[])
         char *path = (char *) argv[3];
 
         Rtsp::Rtsp_receiver *rtsp_receiver = new Rtsp_receiver(argv[1],port,path);
-        for(size_t i=0; i<4; i++)
+        Rtsp::SDP_parser *sdp = new Rtsp::SDP_parser();
+		std::string result;
+		std::ostringstream out;
+		int len = 0;
+		for(size_t i=0; i<4; i++)
         {
           const char *requests = rtsp_receiver->Rtsp_GenerateRequest(request, (int)i);
           int req_len = strlen(requests);
@@ -75,6 +84,17 @@ int main (int argc, char* argv[])
               size_t bytes =
 			     socket.read_some(boost::asio::buffer(&buf[0],buf.size()));
               buf.resize(bytes);
+			  
+			  if(i == 1)
+			  {
+				  // response with SDP data obtained 
+				  // parse the sources
+				  std::copy(buf.begin(),buf.end()-1, std::ostream_iterator<char>(out));
+				  result = out.str();
+				  len = result.length();
+				  sdp = new Rtsp::SDP_parser(result,len);
+				  bool parsed = sdp->SDP_Decode();
+			  }
 
               std::cout << "Data Obtained as response" << std::endl;
 
@@ -90,7 +110,7 @@ int main (int argc, char* argv[])
         while (1)
         {
                 std::vector<uint8_t> buf;
-                buf.resize(4096);
+                buf.resize(2048);
                 size_t bytes =
                     socket.read_some(boost::asio::buffer(&buf[0],buf.size()));
                 buf.resize(bytes);

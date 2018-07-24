@@ -230,7 +230,7 @@ using namespace std;
                                       }
                              case 12:
                                       {
-                                       if(Pcnt != 0) {
+                                       if(Pcnt >=97) {
                                                   unsigned long PConSrc = RTP_GetContribSrcCount(0); std::cout << "Contrib Source = " << PConSrc << std::endl;
                                                   offset +=4;
                                         }
@@ -258,7 +258,7 @@ using namespace std;
                  _payload = new char[paysize];
                  memset(_payload, '\0', sizeof(_payload));
                  memcpy(_payload, _data + offset, paysize);
-                 std::cout << "Inside the payload is = " << _payload << std::endl;
+                 //std::cout << "Inside the payload is = " << _payload << std::endl;
                 }
                 else
                 {

@@ -989,7 +989,7 @@ using namespace boost;
 		return vat;
 	}
 }
-
+/*
 int main(int argc,char* argv[])
 {
 		std::string file,line;
@@ -1008,4 +1008,5 @@ int main(int argc,char* argv[])
 		len = file.length();
 		sdp = new Rtsp::SDP_parser(file,len);
                 bool parsed = sdp->SDP_Decode();
-}
+} 
+*/

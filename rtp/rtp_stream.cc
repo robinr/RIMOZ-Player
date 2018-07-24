@@ -24,11 +24,14 @@ namespace Rtp
 
       void RTP_Stream::RTP_Stream_write(void *buf, size_t count)
       {
-          rtp_file.seekg(0, rtp_file.end);
-          rtp_file.write((const char*)buf, count * sizeof(uint8_t));
-          size = size + (count * sizeof(uint8_t));
-          std::cout << "********** File COUNT **********" << size << std::endl;
-          rtp_file.flush();
+          if(buf != NULL)
+          {
+             rtp_file.seekg(0, rtp_file.end);
+             rtp_file.write((const char*)buf, count * sizeof(uint8_t));
+             size = size + (count * sizeof(uint8_t));
+             std::cout << "********** File COUNT **********" << size << std::endl;
+             rtp_file.flush();
+          }
       }
 
       RTP_Stream::~RTP_Stream()
